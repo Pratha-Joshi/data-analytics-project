@@ -83,3 +83,21 @@ select dc.country,SUM(fs.sales_amount)
 from  gold.fact_sales fs left join gold.dim_customers dc
 on dc.customer_key = fs.customer_key
 group by dc.country
+
+--Which 5 products generate the highest revenue?
+select * 
+from(
+	select dp.product_id,dp.product_name,sum(fs.sales_amount),DENSE_RANK() over (order by sum(fs.sales_amount) desc) as ranking
+	from gold.fact_sales fs left join gold.dim_products dp
+	on fs.product_key = dp.product_key
+	group by dp.product_id,dp.product_name)db
+where ranking <=5
+
+--What are the 5 worst performing products in terms of sale?
+select s.product_id, s.product_id, s.total_revenue, s.product_name
+from(
+	select dp.product_id,dp.product_name,sum(fs.sales_amount) as total_revenue,DENSE_RANK() over (order by sum(fs.sales_amount)) as ranking
+	from gold.fact_sales fs left join gold.dim_products dp
+	on fs.product_key = dp.product_key
+	group by dp.product_id,dp.product_name)s
+where ranking <=5
